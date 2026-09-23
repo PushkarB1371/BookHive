@@ -1,0 +1,15 @@
+# React / Node
+node_modules/
+dist/
+.env
+.env.local
+
+# Java / Maven
+target/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
