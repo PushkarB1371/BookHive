@@ -1,0 +1,7 @@
+package com.example.BookhiveBackend.enums;
+
+public enum NotificationType {
+    NEW_REPLY,
+    CHAPTER_UNLOCK,
+    MEETING_REMINDER
+}
