@@ -1,12 +1,11 @@
 package com.example.BookhiveBackend.entity;
 
-
+import com.example.BookhiveBackend.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.example.BookhiveBackend.enums.UserRole;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -43,5 +42,4 @@ public class User {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
-
 }
