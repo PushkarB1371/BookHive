@@ -2,5 +2,5 @@ package com.example.BookhiveBackend.enums;
 
 public enum UserRole {
     ADMIN,
-    USER
+    MEMBER
 }
