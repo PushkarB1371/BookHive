@@ -33,6 +33,16 @@ public class ClubController {
         return ResponseEntity.ok(clubService.getAllClubs());
     }
 
+    @GetMapping("/grouped")
+    public ResponseEntity<?> getGroupedClubs() {
+        return ResponseEntity.ok(clubService.getClubsGroupedForUser(CurrentUser.getId()));
+    }
+
+    @GetMapping("/reading/{bookId}")
+    public ResponseEntity<?> getClubsReadingBook(@PathVariable UUID bookId) {
+        return ResponseEntity.ok(clubService.getClubsReadingBook(bookId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getClub(@PathVariable UUID id) {
         try {

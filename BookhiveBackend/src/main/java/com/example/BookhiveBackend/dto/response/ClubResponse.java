@@ -6,6 +6,7 @@ public record ClubResponse(
         UUID id,
         String name,
         String description,
+        String coverImageUrl,
         BookResponse currentBook,
         UUID createdBy,
         String createdByName

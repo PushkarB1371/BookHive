@@ -13,8 +13,12 @@ import com.example.BookhiveBackend.repository.MembershipRepository;
 import com.example.BookhiveBackend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ClubService {
@@ -39,11 +43,11 @@ public class ClubService {
         Club club = Club.builder()
                 .name(request.name())
                 .description(request.description())
+                .coverImageUrl(request.coverImageUrl())
                 .createdBy(user)
                 .build();
         clubRepository.save(club);
 
-        // creator automatically becomes an admin member of their own club
         Membership membership = Membership.builder()
                 .user(user)
                 .club(club)
@@ -95,6 +99,43 @@ public class ClubService {
         membershipRepository.save(membership);
     }
 
+    public Map<String, List<ClubResponse>> getClubsGroupedForUser(UUID userId) {
+        List<Club> allClubs = clubRepository.findAll();
+        List<Membership> myMemberships = membershipRepository.findByUserId(userId);
+
+        Set<UUID> joinedClubIds = myMemberships.stream()
+                .map(m -> m.getClub().getId())
+                .collect(Collectors.toSet());
+
+        List<ClubResponse> created = allClubs.stream()
+                .filter(c -> c.getCreatedBy().getId().equals(userId))
+                .map(this::toResponse)
+                .toList();
+
+        List<ClubResponse> joined = allClubs.stream()
+                .filter(c -> joinedClubIds.contains(c.getId()) && !c.getCreatedBy().getId().equals(userId))
+                .map(this::toResponse)
+                .toList();
+
+        List<ClubResponse> discover = allClubs.stream()
+                .filter(c -> !joinedClubIds.contains(c.getId()) && !c.getCreatedBy().getId().equals(userId))
+                .map(this::toResponse)
+                .toList();
+
+        Map<String, List<ClubResponse>> result = new LinkedHashMap<>();
+        result.put("myClubs", created);
+        result.put("joinedClubs", joined);
+        result.put("discoverClubs", discover);
+        return result;
+    }
+
+    public List<ClubResponse> getClubsReadingBook(UUID bookId) {
+        return clubRepository.findAll().stream()
+                .filter(c -> c.getCurrentBook() != null && c.getCurrentBook().getId().equals(bookId))
+                .map(this::toResponse)
+                .toList();
+    }
+
     private void requireClubAdmin(UUID clubId, UUID userId) {
         Membership membership = membershipRepository.findByUserIdAndClubId(userId, clubId)
                 .orElseThrow(() -> new IllegalArgumentException("Not a member of this club"));
@@ -116,6 +157,7 @@ public class ClubService {
                 club.getId(),
                 club.getName(),
                 club.getDescription(),
+                club.getCoverImageUrl(),
                 bookResponse,
                 club.getCreatedBy().getId(),
                 club.getCreatedBy().getName()

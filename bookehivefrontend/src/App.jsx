@@ -6,6 +6,8 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Clubs from './pages/Clubs';
 import ClubDetail from './pages/ClubDetail';
+import Books from './pages/Books';
+import BookDetail from './pages/BookDetail';
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/clubs" element={<ProtectedRoute><Clubs /></ProtectedRoute>} />
             <Route path="/clubs/:id" element={<ProtectedRoute><ClubDetail /></ProtectedRoute>} />
+            <Route path="/books" element={<ProtectedRoute><Books /></ProtectedRoute>} />
+            <Route path="/books/:id" element={<ProtectedRoute><BookDetail /></ProtectedRoute>} />
           </Routes>
         </Layout>
       </BrowserRouter>

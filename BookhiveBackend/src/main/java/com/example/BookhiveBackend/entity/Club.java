@@ -26,6 +26,9 @@ public class Club {
 
     private String description;
 
+    @Column(name = "cover_image_url")
+    private String coverImageUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_book_id")
     private Book currentBook;
@@ -42,4 +45,3 @@ public class Club {
         this.createdAt = LocalDateTime.now();
     }
 }
-
