@@ -30,7 +30,7 @@ public class ClubController {
 
     @GetMapping
     public ResponseEntity<?> getAllClubs() {
-        return ResponseEntity.ok(clubService.getAllClubs());
+        return ResponseEntity.ok(clubService.getAllClubs(CurrentUser.getId()));
     }
 
     @GetMapping("/grouped")
@@ -40,13 +40,13 @@ public class ClubController {
 
     @GetMapping("/reading/{bookId}")
     public ResponseEntity<?> getClubsReadingBook(@PathVariable UUID bookId) {
-        return ResponseEntity.ok(clubService.getClubsReadingBook(bookId));
+        return ResponseEntity.ok(clubService.getClubsReadingBook(bookId, CurrentUser.getId()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getClub(@PathVariable UUID id) {
         try {
-            return ResponseEntity.ok(clubService.getClubById(id));
+            return ResponseEntity.ok(clubService.getClubById(id, CurrentUser.getId()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }

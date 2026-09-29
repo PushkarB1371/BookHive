@@ -9,5 +9,7 @@ public record ClubResponse(
         String coverImageUrl,
         BookResponse currentBook,
         UUID createdBy,
-        String createdByName
+        String createdByName,
+        boolean isCurrentUserAdmin,
+        boolean isCurrentUserMember
 ) {}

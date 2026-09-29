@@ -55,17 +55,17 @@ public class ClubService {
                 .build();
         membershipRepository.save(membership);
 
-        return toResponse(club);
+        return toResponse(club, userId);
     }
 
-    public List<ClubResponse> getAllClubs() {
-        return clubRepository.findAll().stream().map(this::toResponse).toList();
+    public List<ClubResponse> getAllClubs(UUID userId) {
+        return clubRepository.findAll().stream().map(c -> toResponse(c, userId)).toList();
     }
 
-    public ClubResponse getClubById(UUID id) {
+    public ClubResponse getClubById(UUID id, UUID userId) {
         Club club = clubRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Club not found"));
-        return toResponse(club);
+        return toResponse(club, userId);
     }
 
     public ClubResponse setCurrentBook(UUID clubId, UUID bookId, UUID userId) {
@@ -78,7 +78,7 @@ public class ClubService {
         club.setCurrentBook(book);
         clubRepository.save(club);
 
-        return toResponse(club);
+        return toResponse(club, userId);
     }
 
     public void joinClub(UUID clubId, UUID userId) {
@@ -109,17 +109,17 @@ public class ClubService {
 
         List<ClubResponse> created = allClubs.stream()
                 .filter(c -> c.getCreatedBy().getId().equals(userId))
-                .map(this::toResponse)
+                .map(c -> toResponse(c, userId))
                 .toList();
 
         List<ClubResponse> joined = allClubs.stream()
                 .filter(c -> joinedClubIds.contains(c.getId()) && !c.getCreatedBy().getId().equals(userId))
-                .map(this::toResponse)
+                .map(c -> toResponse(c, userId))
                 .toList();
 
         List<ClubResponse> discover = allClubs.stream()
                 .filter(c -> !joinedClubIds.contains(c.getId()) && !c.getCreatedBy().getId().equals(userId))
-                .map(this::toResponse)
+                .map(c -> toResponse(c, userId))
                 .toList();
 
         Map<String, List<ClubResponse>> result = new LinkedHashMap<>();
@@ -129,10 +129,10 @@ public class ClubService {
         return result;
     }
 
-    public List<ClubResponse> getClubsReadingBook(UUID bookId) {
+    public List<ClubResponse> getClubsReadingBook(UUID bookId, UUID userId) {
         return clubRepository.findAll().stream()
                 .filter(c -> c.getCurrentBook() != null && c.getCurrentBook().getId().equals(bookId))
-                .map(this::toResponse)
+                .map(c -> toResponse(c, userId))
                 .toList();
     }
 
@@ -145,13 +145,17 @@ public class ClubService {
         }
     }
 
-    private ClubResponse toResponse(Club club) {
+    private ClubResponse toResponse(Club club, UUID userId) {
         BookResponse bookResponse = null;
         if (club.getCurrentBook() != null) {
             Book b = club.getCurrentBook();
             bookResponse = new BookResponse(b.getId(), b.getTitle(), b.getAuthor(),
                     b.getTotalChapters(), b.getCoverImageUrl());
         }
+
+        Membership membership = membershipRepository.findByUserIdAndClubId(userId, club.getId()).orElse(null);
+        boolean isAdmin = membership != null && membership.getRoleInClub() == ClubRole.ADMIN;
+        boolean isMember = membership != null;
 
         return new ClubResponse(
                 club.getId(),
@@ -160,7 +164,9 @@ public class ClubService {
                 club.getCoverImageUrl(),
                 bookResponse,
                 club.getCreatedBy().getId(),
-                club.getCreatedBy().getName()
+                club.getCreatedBy().getName(),
+                isAdmin,
+                isMember
         );
     }
 }
