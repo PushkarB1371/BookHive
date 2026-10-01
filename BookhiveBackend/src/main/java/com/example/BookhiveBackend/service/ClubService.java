@@ -9,9 +9,12 @@ import com.example.BookhiveBackend.entity.Membership;
 import com.example.BookhiveBackend.entity.User;
 import com.example.BookhiveBackend.enums.ClubRole;
 import com.example.BookhiveBackend.repository.ClubRepository;
+import com.example.BookhiveBackend.repository.CommentRepository;
 import com.example.BookhiveBackend.repository.MembershipRepository;
+import com.example.BookhiveBackend.repository.ProgressRepository;
 import com.example.BookhiveBackend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,15 +30,21 @@ public class ClubService {
     private final UserRepository userRepository;
     private final MembershipRepository membershipRepository;
     private final BookService bookService;
+    private final CommentRepository commentRepository;
+    private final ProgressRepository progressRepository;
 
     public ClubService(ClubRepository clubRepository, UserRepository userRepository,
-                       MembershipRepository membershipRepository, BookService bookService) {
+                       MembershipRepository membershipRepository, BookService bookService,
+                       CommentRepository commentRepository, ProgressRepository progressRepository) {
         this.clubRepository = clubRepository;
         this.userRepository = userRepository;
         this.membershipRepository = membershipRepository;
         this.bookService = bookService;
+        this.commentRepository = commentRepository;
+        this.progressRepository = progressRepository;
     }
 
+    @Transactional
     public ClubResponse createClub(CreateClubRequest request, UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -58,16 +67,19 @@ public class ClubService {
         return toResponse(club, userId);
     }
 
+    @Transactional(readOnly = true)
     public List<ClubResponse> getAllClubs(UUID userId) {
         return clubRepository.findAll().stream().map(c -> toResponse(c, userId)).toList();
     }
 
+    @Transactional(readOnly = true)
     public ClubResponse getClubById(UUID id, UUID userId) {
         Club club = clubRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Club not found"));
         return toResponse(club, userId);
     }
 
+    @Transactional
     public ClubResponse setCurrentBook(UUID clubId, UUID bookId, UUID userId) {
         Club club = clubRepository.findById(clubId)
                 .orElseThrow(() -> new IllegalArgumentException("Club not found"));
@@ -81,6 +93,7 @@ public class ClubService {
         return toResponse(club, userId);
     }
 
+    @Transactional
     public void joinClub(UUID clubId, UUID userId) {
         if (membershipRepository.existsByUserIdAndClubId(userId, clubId)) {
             throw new IllegalArgumentException("Already a member of this club");
@@ -99,6 +112,22 @@ public class ClubService {
         membershipRepository.save(membership);
     }
 
+    @Transactional
+    public void deleteClub(UUID clubId, UUID userId) {
+        Club club = clubRepository.findById(clubId)
+                .orElseThrow(() -> new IllegalArgumentException("Club not found"));
+
+        if (!club.getCreatedBy().getId().equals(userId)) {
+            throw new IllegalArgumentException("Only the club creator can delete this club");
+        }
+
+        commentRepository.deleteByClubId(clubId);
+        progressRepository.deleteByClubId(clubId);
+        membershipRepository.deleteByClubId(clubId);
+        clubRepository.delete(club);
+    }
+
+    @Transactional(readOnly = true)
     public Map<String, List<ClubResponse>> getClubsGroupedForUser(UUID userId) {
         List<Club> allClubs = clubRepository.findAll();
         List<Membership> myMemberships = membershipRepository.findByUserId(userId);
@@ -129,6 +158,7 @@ public class ClubService {
         return result;
     }
 
+    @Transactional(readOnly = true)
     public List<ClubResponse> getClubsReadingBook(UUID bookId, UUID userId) {
         return clubRepository.findAll().stream()
                 .filter(c -> c.getCurrentBook() != null && c.getCurrentBook().getId().equals(bookId))
@@ -149,8 +179,10 @@ public class ClubService {
         BookResponse bookResponse = null;
         if (club.getCurrentBook() != null) {
             Book b = club.getCurrentBook();
-            bookResponse = new BookResponse(b.getId(), b.getTitle(), b.getAuthor(),
-                    b.getTotalChapters(), b.getCoverImageUrl());
+            bookResponse = new BookResponse(
+                    b.getId(), b.getTitle(), b.getAuthor(), b.getTotalChapters(),
+                    b.getCoverImageUrl(), b.getDescription(), b.getCategory(), b.getPublishedDate()
+            );
         }
 
         Membership membership = membershipRepository.findByUserIdAndClubId(userId, club.getId()).orElse(null);

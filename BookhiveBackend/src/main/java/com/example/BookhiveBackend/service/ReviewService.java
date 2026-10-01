@@ -8,6 +8,7 @@ import com.example.BookhiveBackend.entity.User;
 import com.example.BookhiveBackend.repository.ReviewRepository;
 import com.example.BookhiveBackend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,7 @@ public class ReviewService {
         this.bookService = bookService;
     }
 
+    @Transactional
     public ReviewResponse addReview(UUID bookId, CreateReviewRequest request, UUID userId) {
         if (request.rating() == null || request.rating() < 1 || request.rating() > 5) {
             throw new IllegalArgumentException("Rating must be between 1 and 5");
@@ -49,10 +51,12 @@ public class ReviewService {
         return toResponse(review);
     }
 
+    @Transactional(readOnly = true)
     public List<ReviewResponse> getReviewsForBook(UUID bookId) {
         return reviewRepository.findByBookId(bookId).stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public Double getAverageRating(UUID bookId) {
         List<Review> reviews = reviewRepository.findByBookId(bookId);
         if (reviews.isEmpty()) return null;

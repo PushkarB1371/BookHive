@@ -1,14 +1,10 @@
 package com.example.BookhiveBackend.dto.response;
 
-import java.util.UUID;
-
-public record BookResponse(
-        UUID id,
+public record BookSearchResult(
         String title,
         String author,
-        Integer totalChapters,
         String coverImageUrl,
         String description,
-        String category,
-        String publishedDate
+        String publishedDate,
+        String category
 ) {}

@@ -9,6 +9,7 @@ import com.example.BookhiveBackend.repository.UserRepository;
 import com.example.BookhiveBackend.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -23,6 +24,7 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
+    @Transactional
     public AuthResponse signup(SignupRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("Email already registered");
@@ -48,6 +50,7 @@ public class AuthService {
         );
     }
 
+    @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));

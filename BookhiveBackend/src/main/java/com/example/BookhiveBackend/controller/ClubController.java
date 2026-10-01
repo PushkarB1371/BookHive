@@ -70,4 +70,14 @@ public class ClubController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteClub(@PathVariable UUID id) {
+        try {
+            clubService.deleteClub(id, CurrentUser.getId());
+            return ResponseEntity.ok(Map.of("message", "Club deleted"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

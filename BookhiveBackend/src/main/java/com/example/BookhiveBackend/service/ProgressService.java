@@ -11,6 +11,7 @@ import com.example.BookhiveBackend.repository.MembershipRepository;
 import com.example.BookhiveBackend.repository.ProgressRepository;
 import com.example.BookhiveBackend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class ProgressService {
         this.membershipRepository = membershipRepository;
     }
 
+    @Transactional
     public ProgressResponse updateProgress(UUID clubId, UpdateProgressRequest request, UUID userId) {
         if (!membershipRepository.existsByUserIdAndClubId(userId, clubId)) {
             throw new IllegalArgumentException("Not a member of this club");
@@ -66,6 +68,7 @@ public class ProgressService {
         return toResponse(progress, book.getTotalChapters());
     }
 
+    @Transactional(readOnly = true)
     public List<ProgressResponse> getClubProgress(UUID clubId) {
         Club club = clubRepository.findById(clubId)
                 .orElseThrow(() -> new IllegalArgumentException("Club not found"));
@@ -80,6 +83,7 @@ public class ProgressService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public ProgressResponse getMyProgress(UUID clubId, UUID userId) {
         Club club = clubRepository.findById(clubId)
                 .orElseThrow(() -> new IllegalArgumentException("Club not found"));

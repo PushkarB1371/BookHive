@@ -33,6 +33,14 @@ public class Book {
     @Column(name = "cover_image_url")
     private String coverImageUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    private String category;
+
+    @Column(name = "published_date")
+    private String publishedDate;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

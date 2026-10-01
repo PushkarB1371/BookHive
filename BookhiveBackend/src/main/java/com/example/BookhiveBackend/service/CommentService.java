@@ -10,6 +10,7 @@ import com.example.BookhiveBackend.repository.CommentRepository;
 import com.example.BookhiveBackend.repository.MembershipRepository;
 import com.example.BookhiveBackend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +31,7 @@ public class CommentService {
         this.membershipRepository = membershipRepository;
     }
 
+    @Transactional
     public CommentResponse addComment(UUID clubId, CreateCommentRequest request, UUID userId) {
         if (!membershipRepository.existsByUserIdAndClubId(userId, clubId)) {
             throw new IllegalArgumentException("Not a member of this club");
@@ -55,6 +57,7 @@ public class CommentService {
         return toResponse(comment);
     }
 
+    @Transactional(readOnly = true)
     public List<CommentResponse> getComments(UUID clubId, Integer chapterNumber) {
         return commentRepository
                 .findByClubIdAndChapterNumberOrderByCreatedAtAsc(clubId, chapterNumber)
