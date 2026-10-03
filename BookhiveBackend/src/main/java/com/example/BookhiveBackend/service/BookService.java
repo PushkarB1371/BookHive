@@ -9,11 +9,15 @@ import com.example.BookhiveBackend.repository.BookRepository;
 import com.example.BookhiveBackend.repository.ClubRepository;
 import com.example.BookhiveBackend.repository.ReviewRepository;
 import com.example.BookhiveBackend.repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class BookService {
@@ -32,6 +36,7 @@ public class BookService {
     }
 
     @Transactional
+    @CacheEvict(value = "books", key = "'all'")
     public BookResponse createBook(CreateBookRequest request, UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -56,11 +61,15 @@ public class BookService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "books", key = "'all'")
     public List<BookResponse> getAllBooks() {
-        return bookRepository.findAll().stream().map(this::toResponse).toList();
+        return bookRepository.findAll().stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "books", key = "#id")
     public BookResponse getBookById(UUID id) {
         Book book = getBookEntity(id);
         return toResponse(book);
@@ -73,6 +82,10 @@ public class BookService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "books", key = "'all'"),
+            @CacheEvict(value = "books", key = "#bookId")
+    })
     public void deleteBook(UUID bookId, UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
