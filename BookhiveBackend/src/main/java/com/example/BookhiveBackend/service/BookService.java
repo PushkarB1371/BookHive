@@ -2,6 +2,7 @@ package com.example.BookhiveBackend.service;
 
 import com.example.BookhiveBackend.dto.request.CreateBookRequest;
 import com.example.BookhiveBackend.dto.response.BookResponse;
+import com.example.BookhiveBackend.dto.response.PageResponse;
 import com.example.BookhiveBackend.entity.Book;
 import com.example.BookhiveBackend.entity.User;
 import com.example.BookhiveBackend.enums.UserRole;
@@ -9,6 +10,7 @@ import com.example.BookhiveBackend.repository.BookRepository;
 import com.example.BookhiveBackend.repository.ClubRepository;
 import com.example.BookhiveBackend.repository.ReviewRepository;
 import com.example.BookhiveBackend.repository.UserRepository;
+import com.example.BookhiveBackend.util.PaginationUtil;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -66,6 +68,10 @@ public class BookService {
         return bookRepository.findAll().stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public PageResponse<BookResponse> getAllBooksPaged(int page, int size) {
+        return PaginationUtil.paginate(getAllBooks(), page, size);
     }
 
     @Transactional(readOnly = true)

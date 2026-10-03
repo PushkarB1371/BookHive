@@ -3,6 +3,7 @@ package com.example.BookhiveBackend.service;
 import com.example.BookhiveBackend.dto.request.CreateClubRequest;
 import com.example.BookhiveBackend.dto.response.BookResponse;
 import com.example.BookhiveBackend.dto.response.ClubResponse;
+import com.example.BookhiveBackend.dto.response.PageResponse;
 import com.example.BookhiveBackend.entity.Book;
 import com.example.BookhiveBackend.entity.Club;
 import com.example.BookhiveBackend.entity.Membership;
@@ -14,6 +15,7 @@ import com.example.BookhiveBackend.repository.CommentRepository;
 import com.example.BookhiveBackend.repository.MembershipRepository;
 import com.example.BookhiveBackend.repository.ProgressRepository;
 import com.example.BookhiveBackend.repository.UserRepository;
+import com.example.BookhiveBackend.util.PaginationUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -169,10 +171,17 @@ public class ClubService {
                 .toList();
 
         Map<String, List<ClubResponse>> result = new LinkedHashMap<>();
-        result.put("myClubs", created);
-        result.put("joinedClubs", joined);
-        result.put("discoverClubs", discover);
+        result.put("mine", created);
+        result.put("joined", joined);
+        result.put("discover", discover);
         return result;
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<ClubResponse> getGroupedPaged(UUID userId, String type, int page, int size) {
+        Map<String, List<ClubResponse>> all = getClubsGroupedForUser(userId);
+        List<ClubResponse> list = all.getOrDefault(type, List.of());
+        return PaginationUtil.paginate(list, page, size);
     }
 
     @Transactional(readOnly = true)

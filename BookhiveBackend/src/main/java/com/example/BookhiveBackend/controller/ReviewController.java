@@ -30,9 +30,13 @@ public class ReviewController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getReviews(@PathVariable UUID bookId) {
+    public ResponseEntity<?> getReviews(
+            @PathVariable UUID bookId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
         Map<String, Object> response = new HashMap<>();
-        response.put("reviews", reviewService.getReviewsForBook(bookId));
+        response.put("reviews", reviewService.getReviewsForBookPaged(bookId, page, size));
         response.put("averageRating", reviewService.getAverageRating(bookId));
         return ResponseEntity.ok(response);
     }

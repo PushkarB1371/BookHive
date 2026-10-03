@@ -36,6 +36,14 @@ public class BookController {
         return ResponseEntity.ok(bookService.getAllBooks());
     }
 
+    @GetMapping("/paginated")
+    public ResponseEntity<?> getBooksPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        return ResponseEntity.ok(bookService.getAllBooksPaged(page, size));
+    }
+
     @GetMapping("/search")
     public ResponseEntity<?> searchExternalBooks(
             @RequestParam(required = false) String q,

@@ -2,6 +2,7 @@ package com.example.BookhiveBackend.service;
 
 import com.example.BookhiveBackend.dto.request.CreateCommentRequest;
 import com.example.BookhiveBackend.dto.response.CommentResponse;
+import com.example.BookhiveBackend.dto.response.PageResponse;
 import com.example.BookhiveBackend.entity.Club;
 import com.example.BookhiveBackend.entity.Comment;
 import com.example.BookhiveBackend.entity.User;
@@ -10,6 +11,7 @@ import com.example.BookhiveBackend.repository.ClubRepository;
 import com.example.BookhiveBackend.repository.CommentRepository;
 import com.example.BookhiveBackend.repository.MembershipRepository;
 import com.example.BookhiveBackend.repository.UserRepository;
+import com.example.BookhiveBackend.util.PaginationUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,6 +88,11 @@ public class CommentService {
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<CommentResponse> getCommentsPaged(UUID clubId, Integer chapterNumber, int page, int size) {
+        return PaginationUtil.paginate(getComments(clubId, chapterNumber), page, size);
     }
 
     private CommentResponse toResponse(Comment c) {

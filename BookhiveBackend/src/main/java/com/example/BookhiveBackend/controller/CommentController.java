@@ -28,7 +28,12 @@ public class CommentController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getComments(@PathVariable UUID clubId, @RequestParam Integer chapter) {
-        return ResponseEntity.ok(commentService.getComments(clubId, chapter));
+    public ResponseEntity<?> getComments(
+            @PathVariable UUID clubId,
+            @RequestParam Integer chapter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(commentService.getCommentsPaged(clubId, chapter, page, size));
     }
 }

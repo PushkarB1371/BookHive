@@ -38,6 +38,15 @@ public class ClubController {
         return ResponseEntity.ok(clubService.getClubsGroupedForUser(CurrentUser.getId()));
     }
 
+    @GetMapping("/grouped/paged")
+    public ResponseEntity<?> getGroupedPaged(
+            @RequestParam String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
+    ) {
+        return ResponseEntity.ok(clubService.getGroupedPaged(CurrentUser.getId(), type, page, size));
+    }
+
     @GetMapping("/reading/{bookId}")
     public ResponseEntity<?> getClubsReadingBook(@PathVariable UUID bookId) {
         return ResponseEntity.ok(clubService.getClubsReadingBook(bookId, CurrentUser.getId()));

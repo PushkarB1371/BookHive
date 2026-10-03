@@ -1,6 +1,7 @@
 package com.example.BookhiveBackend.service;
 
 import com.example.BookhiveBackend.dto.request.CreateReviewRequest;
+import com.example.BookhiveBackend.dto.response.PageResponse;
 import com.example.BookhiveBackend.dto.response.ReviewResponse;
 import com.example.BookhiveBackend.entity.Book;
 import com.example.BookhiveBackend.entity.Review;
@@ -8,6 +9,7 @@ import com.example.BookhiveBackend.entity.User;
 import com.example.BookhiveBackend.enums.NotificationType;
 import com.example.BookhiveBackend.repository.ReviewRepository;
 import com.example.BookhiveBackend.repository.UserRepository;
+import com.example.BookhiveBackend.util.PaginationUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +66,11 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public List<ReviewResponse> getReviewsForBook(UUID bookId) {
         return reviewRepository.findByBookId(bookId).stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<ReviewResponse> getReviewsForBookPaged(UUID bookId, int page, int size) {
+        return PaginationUtil.paginate(getReviewsForBook(bookId), page, size);
     }
 
     @Transactional(readOnly = true)
