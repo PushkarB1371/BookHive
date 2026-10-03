@@ -5,6 +5,7 @@ import com.example.BookhiveBackend.dto.response.CommentResponse;
 import com.example.BookhiveBackend.entity.Club;
 import com.example.BookhiveBackend.entity.Comment;
 import com.example.BookhiveBackend.entity.User;
+import com.example.BookhiveBackend.enums.NotificationType;
 import com.example.BookhiveBackend.repository.ClubRepository;
 import com.example.BookhiveBackend.repository.CommentRepository;
 import com.example.BookhiveBackend.repository.MembershipRepository;
@@ -13,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -22,13 +25,16 @@ public class CommentService {
     private final ClubRepository clubRepository;
     private final UserRepository userRepository;
     private final MembershipRepository membershipRepository;
+    private final NotificationService notificationService;
 
     public CommentService(CommentRepository commentRepository, ClubRepository clubRepository,
-                          UserRepository userRepository, MembershipRepository membershipRepository) {
+                          UserRepository userRepository, MembershipRepository membershipRepository,
+                          NotificationService notificationService) {
         this.commentRepository = commentRepository;
         this.clubRepository = clubRepository;
         this.userRepository = userRepository;
         this.membershipRepository = membershipRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -46,6 +52,16 @@ public class CommentService {
             throw new IllegalArgumentException("Comment cannot be empty");
         }
 
+        // Notify others already active in this chapter's discussion, before adding the new comment
+        List<Comment> existingComments = commentRepository
+                .findByClubIdAndChapterNumberOrderByCreatedAtAsc(clubId, request.chapterNumber());
+
+        Set<User> otherParticipants = existingComments.stream()
+                .map(Comment::getUser)
+                .filter(u -> !u.getId().equals(userId))
+                .collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a))
+                .values().stream().collect(Collectors.toSet());
+
         Comment comment = Comment.builder()
                 .user(user)
                 .club(club)
@@ -54,6 +70,13 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
+
+        String message = user.getName() + " commented on Chapter " + request.chapterNumber()
+                + " in " + club.getName();
+        for (User participant : otherParticipants) {
+            notificationService.createNotification(participant, NotificationType.NEW_REPLY, message);
+        }
+
         return toResponse(comment);
     }
 

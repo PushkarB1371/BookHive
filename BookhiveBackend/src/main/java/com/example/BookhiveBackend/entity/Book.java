@@ -41,6 +41,10 @@ public class Book {
     @Column(name = "published_date")
     private String publishedDate;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "added_by")
+    private User addedBy;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

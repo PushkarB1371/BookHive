@@ -8,6 +8,7 @@ import com.example.BookhiveBackend.entity.Club;
 import com.example.BookhiveBackend.entity.Membership;
 import com.example.BookhiveBackend.entity.User;
 import com.example.BookhiveBackend.enums.ClubRole;
+import com.example.BookhiveBackend.enums.NotificationType;
 import com.example.BookhiveBackend.repository.ClubRepository;
 import com.example.BookhiveBackend.repository.CommentRepository;
 import com.example.BookhiveBackend.repository.MembershipRepository;
@@ -32,16 +33,19 @@ public class ClubService {
     private final BookService bookService;
     private final CommentRepository commentRepository;
     private final ProgressRepository progressRepository;
+    private final NotificationService notificationService;
 
     public ClubService(ClubRepository clubRepository, UserRepository userRepository,
                        MembershipRepository membershipRepository, BookService bookService,
-                       CommentRepository commentRepository, ProgressRepository progressRepository) {
+                       CommentRepository commentRepository, ProgressRepository progressRepository,
+                       NotificationService notificationService) {
         this.clubRepository = clubRepository;
         this.userRepository = userRepository;
         this.membershipRepository = membershipRepository;
         this.bookService = bookService;
         this.commentRepository = commentRepository;
         this.progressRepository = progressRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -90,6 +94,14 @@ public class ClubService {
         club.setCurrentBook(book);
         clubRepository.save(club);
 
+        List<Membership> members = membershipRepository.findByClubId(clubId);
+        String message = club.getName() + " is now reading " + book.getTitle();
+        for (Membership m : members) {
+            if (!m.getUser().getId().equals(userId)) {
+                notificationService.createNotification(m.getUser(), NotificationType.CHAPTER_UNLOCK, message);
+            }
+        }
+
         return toResponse(club, userId);
     }
 
@@ -110,6 +122,11 @@ public class ClubService {
                 .roleInClub(ClubRole.MEMBER)
                 .build();
         membershipRepository.save(membership);
+
+        if (!club.getCreatedBy().getId().equals(userId)) {
+            String message = user.getName() + " joined " + club.getName();
+            notificationService.createNotification(club.getCreatedBy(), NotificationType.NEW_REPLY, message);
+        }
     }
 
     @Transactional

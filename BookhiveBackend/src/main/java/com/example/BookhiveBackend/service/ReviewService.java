@@ -5,6 +5,7 @@ import com.example.BookhiveBackend.dto.response.ReviewResponse;
 import com.example.BookhiveBackend.entity.Book;
 import com.example.BookhiveBackend.entity.Review;
 import com.example.BookhiveBackend.entity.User;
+import com.example.BookhiveBackend.enums.NotificationType;
 import com.example.BookhiveBackend.repository.ReviewRepository;
 import com.example.BookhiveBackend.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,14 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final BookService bookService;
+    private final NotificationService notificationService;
 
-    public ReviewService(ReviewRepository reviewRepository, UserRepository userRepository, BookService bookService) {
+    public ReviewService(ReviewRepository reviewRepository, UserRepository userRepository,
+                         BookService bookService, NotificationService notificationService) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.bookService = bookService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -48,6 +52,12 @@ public class ReviewService {
                 .build();
 
         reviewRepository.save(review);
+
+        if (book.getAddedBy() != null && !book.getAddedBy().getId().equals(userId)) {
+            String message = user.getName() + " reviewed " + book.getTitle() + " (" + request.rating() + " stars)";
+            notificationService.createNotification(book.getAddedBy(), NotificationType.NEW_REPLY, message);
+        }
+
         return toResponse(review);
     }
 

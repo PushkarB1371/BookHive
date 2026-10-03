@@ -48,6 +48,7 @@ public class BookService {
                 .description(request.description())
                 .category(request.category())
                 .publishedDate(request.publishedDate())
+                .addedBy(user)
                 .build();
 
         bookRepository.save(book);
