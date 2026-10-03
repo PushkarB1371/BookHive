@@ -25,16 +25,16 @@ public class CommentService {
     private final ClubRepository clubRepository;
     private final UserRepository userRepository;
     private final MembershipRepository membershipRepository;
-    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
 
     public CommentService(CommentRepository commentRepository, ClubRepository clubRepository,
                           UserRepository userRepository, MembershipRepository membershipRepository,
-                          NotificationService notificationService) {
+                          NotificationProducer notificationProducer) {
         this.commentRepository = commentRepository;
         this.clubRepository = clubRepository;
         this.userRepository = userRepository;
         this.membershipRepository = membershipRepository;
-        this.notificationService = notificationService;
+        this.notificationProducer = notificationProducer;
     }
 
     @Transactional
@@ -52,7 +52,6 @@ public class CommentService {
             throw new IllegalArgumentException("Comment cannot be empty");
         }
 
-        // Notify others already active in this chapter's discussion, before adding the new comment
         List<Comment> existingComments = commentRepository
                 .findByClubIdAndChapterNumberOrderByCreatedAtAsc(clubId, request.chapterNumber());
 
@@ -74,7 +73,7 @@ public class CommentService {
         String message = user.getName() + " commented on Chapter " + request.chapterNumber()
                 + " in " + club.getName();
         for (User participant : otherParticipants) {
-            notificationService.createNotification(participant, NotificationType.NEW_REPLY, message);
+            notificationProducer.publish(participant, NotificationType.NEW_REPLY, message);
         }
 
         return toResponse(comment);

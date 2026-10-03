@@ -33,19 +33,19 @@ public class ClubService {
     private final BookService bookService;
     private final CommentRepository commentRepository;
     private final ProgressRepository progressRepository;
-    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
 
     public ClubService(ClubRepository clubRepository, UserRepository userRepository,
                        MembershipRepository membershipRepository, BookService bookService,
                        CommentRepository commentRepository, ProgressRepository progressRepository,
-                       NotificationService notificationService) {
+                       NotificationProducer notificationProducer) {
         this.clubRepository = clubRepository;
         this.userRepository = userRepository;
         this.membershipRepository = membershipRepository;
         this.bookService = bookService;
         this.commentRepository = commentRepository;
         this.progressRepository = progressRepository;
-        this.notificationService = notificationService;
+        this.notificationProducer = notificationProducer;
     }
 
     @Transactional
@@ -98,7 +98,7 @@ public class ClubService {
         String message = club.getName() + " is now reading " + book.getTitle();
         for (Membership m : members) {
             if (!m.getUser().getId().equals(userId)) {
-                notificationService.createNotification(m.getUser(), NotificationType.CHAPTER_UNLOCK, message);
+                notificationProducer.publish(m.getUser(), NotificationType.CHAPTER_UNLOCK, message);
             }
         }
 
@@ -125,7 +125,7 @@ public class ClubService {
 
         if (!club.getCreatedBy().getId().equals(userId)) {
             String message = user.getName() + " joined " + club.getName();
-            notificationService.createNotification(club.getCreatedBy(), NotificationType.NEW_REPLY, message);
+            notificationProducer.publish(club.getCreatedBy(), NotificationType.NEW_REPLY, message);
         }
     }
 

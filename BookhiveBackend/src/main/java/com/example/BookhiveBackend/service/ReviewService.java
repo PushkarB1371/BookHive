@@ -20,14 +20,14 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final BookService bookService;
-    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
 
     public ReviewService(ReviewRepository reviewRepository, UserRepository userRepository,
-                         BookService bookService, NotificationService notificationService) {
+                         BookService bookService, NotificationProducer notificationProducer) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.bookService = bookService;
-        this.notificationService = notificationService;
+        this.notificationProducer = notificationProducer;
     }
 
     @Transactional
@@ -55,7 +55,7 @@ public class ReviewService {
 
         if (book.getAddedBy() != null && !book.getAddedBy().getId().equals(userId)) {
             String message = user.getName() + " reviewed " + book.getTitle() + " (" + request.rating() + " stars)";
-            notificationService.createNotification(book.getAddedBy(), NotificationType.NEW_REPLY, message);
+            notificationProducer.publish(book.getAddedBy(), NotificationType.NEW_REPLY, message);
         }
 
         return toResponse(review);

@@ -21,6 +21,7 @@
   --destructive: #C0392B;
   --destructive-foreground: #FFFFFF;
   --border: #E3DFD3;
+  --rule: #DDD8C8;
   --input: #E3DFD3;
   --ring: #2F5233;
   --radius: 0.5rem;
@@ -44,6 +45,7 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-rule: var(--rule);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --radius-lg: var(--radius);
@@ -57,4 +59,15 @@ body {
 
 .font-display {
   font-family: 'Lora', serif;
+}
+
+.drop-cap::first-letter {
+  font-family: 'Lora', serif;
+  font-size: 3.4rem;
+  font-weight: 600;
+  float: left;
+  line-height: 0.8;
+  padding-right: 0.5rem;
+  padding-top: 0.3rem;
+  color: var(--primary);
 }
